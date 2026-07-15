@@ -364,6 +364,21 @@ const FIREBASE_CONFIG = {
   measurementId: "G-VTLE7BP6S7",
 };
 
+const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js");
+const app = initializeApp(FIREBASE_CONFIG);
+
+// GA4 initializes on load: page_view fires automatically, and enhanced
+// measurement adds scroll and outbound-click events. This is the top of the
+// funnel; waitlist_joined below is the bottom. Wrapped so ad blockers
+// (which kill the gtag fetch) can't break the page or the form.
+let logWaitlistJoined = () => {};
+try {
+  const { getAnalytics, logEvent } =
+    await import("https://www.gstatic.com/firebasejs/10.14.1/firebase-analytics.js");
+  const analytics = getAnalytics(app);
+  logWaitlistJoined = () => logEvent(analytics, "waitlist_joined");
+} catch {}
+
 const form = document.getElementById("waitlist");
 const done = document.getElementById("done");
 const fail = document.getElementById("fail");
@@ -377,21 +392,14 @@ form.addEventListener("submit", async (e) => {
     return;
   }
   try {
-    if (!FIREBASE_CONFIG) throw new Error("not configured");
-    const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js");
     const { getFirestore, collection, addDoc } =
       await import("https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js");
-    const app = initializeApp(FIREBASE_CONFIG);
     await addDoc(collection(getFirestore(app), "waitlist"), {
       email,
       name: document.getElementById("name").value.trim(),
       createdAtMillis: Date.now(),
     });
-    if (FIREBASE_CONFIG.measurementId) {
-      const { getAnalytics, logEvent } =
-        await import("https://www.gstatic.com/firebasejs/10.14.1/firebase-analytics.js");
-      logEvent(getAnalytics(app), "waitlist_joined");
-    }
+    logWaitlistJoined();
     form.style.display = "none";
     done.style.display = "block";
   } catch {
