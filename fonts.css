@@ -1,0 +1,16 @@
+/* Self-hosted Noto Serif (variable, latin subset). font-display: optional:
+   never flash unstyled text; a cold cache may show the fallback serif once. */
+@font-face {
+  font-family: "Noto Serif";
+  font-style: normal;
+  font-weight: 400 900;
+  font-display: optional;
+  src: url("fonts/NotoSerif-Var.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Noto Serif";
+  font-style: italic;
+  font-weight: 400;
+  font-display: optional;
+  src: url("fonts/NotoSerif-Italic.woff2") format("woff2");
+}

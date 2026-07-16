@@ -6,9 +6,31 @@
 <title>repeated: voice-first ephemeral social network</title>
 <meta name="description" content="Voice-first ephemeral social network. What would you say if you knew your words would be repeated?">
 <link rel="icon" href="icon-192.png">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Serif:ital,wght@0,400;0,700;0,900;1,400&display=swap" rel="stylesheet">
+<link rel="canonical" href="https://repeated.to/">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://repeated.to/">
+<meta property="og:title" content="repeated: voice-first ephemeral social network">
+<meta property="og:description" content="What would you say if you knew your words would be repeated?">
+<meta property="og:image" content="https://repeated.to/og-image.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="repeated: voice-first ephemeral social network">
+<meta name="twitter:description" content="What would you say if you knew your words would be repeated?">
+<meta name="twitter:image" content="https://repeated.to/og-image.png">
+<link rel="preload" href="fonts/NotoSerif-Var.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/NotoSerif-Italic.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="fonts.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "MobileApplication",
+  "name": "repeated",
+  "url": "https://repeated.to/",
+  "description": "Voice-first ephemeral social network. Posts are speeches; to like one, you repeat it out loud in your own voice.",
+  "operatingSystem": "ANDROID",
+  "applicationCategory": "SocialNetworkingApplication",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+}
+</script>
 <style>
   :root {
     --paper: #F7F4EC;
@@ -132,6 +154,28 @@
     font-size: 0.85rem;
     margin-top: 12px;
     opacity: 0.75;
+  }
+  /* Ribbon loop: the cards "speak" themselves with the app's effect — one
+     continuous strip sweeping each line in succession (an inline element's
+     background is painted as a single sliced ribbon across line wraps).
+     currentColor keeps it legible on every swatch, dark cards included. */
+  .ribbon {
+    background-image: linear-gradient(
+      color-mix(in srgb, currentColor 17%, transparent),
+      color-mix(in srgb, currentColor 17%, transparent));
+    background-repeat: no-repeat;
+    background-size: 0% 100%;
+    animation: ribbon-sweep var(--dur, 7s) linear var(--delay, 0s) infinite;
+  }
+  @keyframes ribbon-sweep {
+    0%   { background-size: 0% 100%; }
+    72%  { background-size: 100% 100%; }
+    88%  { background-size: 100% 100%; }
+    89%  { background-size: 0% 100%; }
+    100% { background-size: 0% 100%; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .ribbon { animation: none; }
   }
 
   .moss  { background: #DCE5D8; color: #22301F; }
@@ -367,6 +411,21 @@
       if (row >= 0) requestAnimationFrame(step);
     })();
   }
+})();
+
+/* ---- ribbon loop on the speech cards ---- */
+(function () {
+  document.querySelectorAll(".speech-card").forEach(function (card, i) {
+    var p = card.querySelector("p");
+    var span = document.createElement("span");
+    span.className = "ribbon";
+    while (p.firstChild) span.appendChild(p.firstChild);
+    p.appendChild(span);
+    // Sweep speed follows text length, like real speech.
+    var words = span.textContent.split(/\s+/).filter(Boolean).length;
+    span.style.setProperty("--dur", Math.min(11, Math.max(5, words * 0.5)) + "s");
+    span.style.setProperty("--delay", (i * 1.1) + "s");
+  });
 })();
 
 /* ---- waitlist → Firestore (create-only; rules block reads) ---- */
